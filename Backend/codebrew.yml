@@ -1,0 +1,64 @@
+name: codebrew
+channels:
+  - conda-forge
+  - defaults
+
+dependencies:
+  - python=3.10
+  - pip
+
+  # Core data / scientific stack
+  - numpy
+  - pandas
+  - scipy
+  - scikit-learn
+  - matplotlib
+  - gensim
+  - keras
+  - pytorch
+  # - seaborn
+
+  # Notebook / VSCode support
+  - ipykernel
+  - jupyter
+  - jupyterlab
+
+  # NLP basics
+  # - nltk
+  # - spacy
+
+  # Utilities
+  # - pyyaml
+  # - requests
+  # - beautifulsoup4
+  # - lxml
+  # - tqdm
+  # - python-dotenv
+
+  # Data handling / logs
+  # - regex
+  # - sqlalchemy
+
+  # Optional but useful
+  # - pyarrow
+
+  - pip:
+    - transformers
+    - imageio      
+    - tensorflow
+    - tensorflow-compression
+    - immageio
+      # - datasets
+      # - tokenizers
+      # - sentencepiece
+      # - accelerate
+      # - evaluate
+
+      # Experiment tracking / helpers
+      # - sentence-transformers
+
+      # For API-based LLM experiments if needed later
+      # - openai
+
+      # Security / parsing helpers
+      # - apache-log-parser

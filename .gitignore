@@ -1,0 +1,7 @@
+venv/
+codebrew-venv/
+__pycache__/
+Backend/__pycache__/
+Backend/codebrew-venv/
+.DS_Store
+*.png
