@@ -1,3 +1,35 @@
-altair
+streamlit  
+pillow
+numpy
+
+
+# Core
 pandas
-streamlit
+scipy
+scikit-learn
+matplotlib
+# gensim
+
+# Deep learning
+# torch
+# torchvision
+tensorflow==2.14.1
+# tensorflow-cpu
+# keras
+
+# NLP / models
+# transformers
+
+# Image
+imageio
+
+# Compression
+tensorflow-compression==2.14.1
+
+# Notebook
+ipykernel
+jupyter
+jupyterlab
+
+# Optional useful
+scikit-image
