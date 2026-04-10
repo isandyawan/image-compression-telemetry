@@ -168,7 +168,7 @@ with col1:
     uploaded_file = st.file_uploader("UPLOAD RAW IMAGE", type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
-        with open("temp.png", "wb") as f:
+        with open("/tmp/temp.png", "wb") as f:
             f.write(uploaded_file.getbuffer())
         uploaded_bytes = uploaded_file.read()
         image = Image.open(uploaded_file).convert('RGB')
@@ -258,7 +258,7 @@ with col2:
             st.download_button(
                 label="DL LATENT (.npy)",
                 data=buffer_img_io.getvalue(),
-                file_name="telemetry_latent.npy",
+                file_name="/tmp/telemetry_latent.npy",
                 mime="application/octet-stream",
                 use_container_width=True
             )
@@ -267,7 +267,7 @@ with col2:
             st.download_button(
                 label="DL DECODED (.png)",
                 data=buffer_img_io.getvalue(),
-                file_name="decoded_telemetry.png",
+                file_name="/tmp/decoded_telemetry.png",
                 mime="image/png",
                 use_container_width=True
             )
