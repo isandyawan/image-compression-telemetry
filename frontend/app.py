@@ -2,12 +2,10 @@ import streamlit as st
 # import torch.nn as nn
 from PIL import Image
 import io
-import numpy as np
 import time
 import base64
 import sys
 import os
-import tensorflow as tf
 
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
@@ -51,13 +49,10 @@ from Backend.autoencoder import AutoEncoder
 #     return model
 
 @st.cache_resource
-def load_model(model_path):
-    model = tf.keras.models.load_model(model_path,compile=False)
-    return model
+def load_autoencoder():
+    return AutoEncoder("Backend/final_model")
 
-AEModel = load_model("Backend/final_model")
-
-model = AutoEncoder(AEModel)
+model = load_autoencoder()
 
 # --- 2. SETUP UI & CUSTOM CSS (NASA THEME) ---
 st.set_page_config(page_title="NASA | Orbital Compression", layout="wide", initial_sidebar_state="collapsed")
@@ -266,7 +261,7 @@ with col2:
         with dl_col2:
             st.download_button(
                 label="DL DECODED (.png)",
-                data=buffer_img_io.getvalue(),
+                data=reconstructed_img,
                 file_name="/tmp/decoded_telemetry.png",
                 mime="image/png",
                 use_container_width=True

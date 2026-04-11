@@ -10,8 +10,8 @@ class AutoEncoder():
     model = None
     dtypes = None
     
-    def __init__(self, model ):
-        self.model = model
+    def __init__(self, model_path ):
+        self.model = self.load_model(model_path)
         self.dtypes = [t.dtype for t in self.model.decompress.input_signature]
         
     def load_img(self, path):
@@ -19,10 +19,9 @@ class AutoEncoder():
         image = tf.image.decode_image(string, channels=3)
         return image
 
-    # @st.cache_resource
-    # def load_model(self, model_path):
-    #     model = tf.keras.models.load_model(model_path,compile=False)
-    #     return model
+    def load_model(self, model_path):
+        model = tf.keras.models.load_model(model_path,compile=False)
+        return model
     
     def compress_tensor(self, bytes_data):
         image = tf.image.decode_image(bytes_data, channels=3)
@@ -66,10 +65,10 @@ class AutoEncoder():
         packed = tfc.PackedTensors(packed_string)        
         tensors = packed.unpack(self.dtypes)
         x_hat = self.model.decompress(*tensors)
-        
-        fakepath = fakepath = "temp_deconstruct.png"
         png_bytes = tf.image.encode_png(x_hat)
-        tf.io.write_file(fakepath, png_bytes)
+        
+        # fakepath = "tmp/decoded_telemetry.png"
+        # tf.io.write_file(fakepath, png_bytes)
 
         print('========================================================================\n')
         return png_bytes.numpy()
