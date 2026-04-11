@@ -175,6 +175,12 @@ with col2:
         payload_size_bytes = len(buffer_img_io.getvalue())
         payload_size_kb = payload_size_bytes / 1024
         compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
+        
+        st.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
+        st.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
+        st.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
+        st.markdown("---")
+        
         status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
         progress_bar.progress(70)
         st.markdown("---")
@@ -186,13 +192,7 @@ with col2:
         status_text.markdown(f"**STATUS:** `PROCESSING COMPLETED`")
         progress_bar.progress(100)
         # Grid Metrik 2x2 biar muat di kolom tengah
-        m1 = st.columns(1)
-        m1.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
-        m1.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
-        m1.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
-        
 
-        st.markdown("---")
         
 # ==========================================
 # KOLOM 3: RECONSTRUCTED PREVIEW
@@ -223,5 +223,4 @@ with col3:
                 mime="image/png",
                 use_container_width=True
             )
-        col1 = st.columns(1)
-        col1.metric(label="FIDELITY", value=f"{fidelity_score:.2f}%")
+        st.metric(label="FIDELITY", value=f"{fidelity_score:.2f}%")
