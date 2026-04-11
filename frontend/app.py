@@ -176,6 +176,17 @@ with col2:
         payload_size_kb = payload_size_bytes / 1024
         compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
         st.markdown("---")
+
+        st.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
+        st.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
+        st.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
+        
+        
+        status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
+        progress_bar.progress(70)
+        
+        
+        reconstructed_img = model.decompress(buffer_img)  # Simulate decompression untuk generate reconstructed_img
         dl_col1, dl_col2 = st.columns(2)
         with dl_col1:
             st.download_button(
@@ -194,17 +205,7 @@ with col2:
                 mime="image/png",
                 use_container_width=True
             )
-        
-        st.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
-        st.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
-        st.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
-        
-        
-        status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
-        progress_bar.progress(70)
         st.markdown("---")
-        
-        reconstructed_img = model.decompress(buffer_img)  # Simulate decompression untuk generate reconstructed_img
         status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
         progress_bar.progress(95)
         fidelity_score = model.calculate_metrics_from_bytes(uploaded_bytes, reconstructed_img)
