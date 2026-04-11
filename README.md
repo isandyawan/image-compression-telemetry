@@ -1,5 +1,3 @@
-# End-to-end Satellite Image Compression Autoencoder
-
 ---
 title: End-to-end Satellite Image Compression Autoencoder
 emoji: 🚀
@@ -14,14 +12,7 @@ short_description: Streamlit template space
 license: mit
 ---
 
-# Welcome to Streamlit!
-
-Edit `/src/streamlit_app.py` to customize this app to your heart's desire. :heart:
-
-If you have any questions, checkout our [documentation](https://docs.streamlit.io) and [community
-forums](https://discuss.streamlit.io).
-
-
+# End-to-end Satellite Image Compression Autoencoder
 
 A high-performance satellite imagery compression dashboard built with **Streamlit** and **Deep Learning**. This system utilizes a Convolutional Autoencoder to compress raw optical data into latent space vectors for efficient telemetry transmission.
 
