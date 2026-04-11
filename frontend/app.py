@@ -175,11 +175,30 @@ with col2:
         payload_size_bytes = len(buffer_img_io.getvalue())
         payload_size_kb = payload_size_bytes / 1024
         compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
+        st.markdown("---")
+        dl_col1, dl_col2 = st.columns(2)
+        with dl_col1:
+            st.download_button(
+                label="DL LATENT (.npy)",
+                data=buffer_img_io.getvalue(),
+                file_name="/tmp/telemetry_latent.npy",
+                mime="application/octet-stream",
+                use_container_width=True
+            )
+            
+        with dl_col2:
+            st.download_button(
+                label="DL DECODED (.png)",
+                data=reconstructed_img,
+                file_name="/tmp/decoded_telemetry.png",
+                mime="image/png",
+                use_container_width=True
+            )
         
         st.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
         st.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
         st.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
-        st.markdown("---")
+        
         
         status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
         progress_bar.progress(70)
@@ -205,22 +224,4 @@ with col3:
     else:
         st.caption("Click to expand")
         st.image(reconstructed_img, caption="RECONSTRUCTED TELEMETRY", use_container_width=True)
-        dl_col1, dl_col2 = st.columns(2)
-        with dl_col1:
-            st.download_button(
-                label="DL LATENT (.npy)",
-                data=buffer_img_io.getvalue(),
-                file_name="/tmp/telemetry_latent.npy",
-                mime="application/octet-stream",
-                use_container_width=True
-            )
-            
-        with dl_col2:
-            st.download_button(
-                label="DL DECODED (.png)",
-                data=reconstructed_img,
-                file_name="/tmp/decoded_telemetry.png",
-                mime="image/png",
-                use_container_width=True
-            )
         st.metric(label="FIDELITY", value=f"{fidelity_score:.2f}%")
