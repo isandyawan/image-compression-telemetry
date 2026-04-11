@@ -1,8 +1,5 @@
-import os
-import streamlit as st
 import tensorflow as tf
 import tensorflow_compression as tfc
-import argparse
 from glob import glob
 
 ##process the image into suitable dimension
@@ -28,49 +25,22 @@ class AutoEncoder():
         compressed = self.model.compress(image)
         packed = tfc.PackedTensors()
         packed.pack(compressed)
-
-        num_pixels = tf.reduce_prod(tf.shape(image)[:-1])
-        bpp = len(packed.string) * 8 / num_pixels
-
-        print('=============================================================')
-        print('uploaded image')
-        print('bitrate : {0:.4}bpp'.format(bpp))
-        print('=============================================================\n')
-
         return packed.string
 
     def compress(self, path):
         image = self.load_img(path)
-        # filename = os.path.splitext(os.path.basename(path))[0]
         compressed = self.model.compress(image)
         packed = tfc.PackedTensors()
         packed.pack(compressed)
-        # bitpath = f"outputs/binary/result_{filename}.pth"
-        # with open(bitpath, "wb") as f:
-        #     f.write(packed.string)
-        num_pixels = tf.reduce_prod(tf.shape(image)[:-1])
-        bpp = len(packed.string) * 8 / num_pixels
-        
-        print('=============================================================')
-        print(os.path.basename(path))
-
-        print('bitrate : {0:.4}bpp'.format(bpp))
-        print('=============================================================\n')
 
         return packed.string
 
     def decompress(self, packed_string):
-        print('========================================================================')
         
         packed = tfc.PackedTensors(packed_string)        
         tensors = packed.unpack(self.dtypes)
         x_hat = self.model.decompress(*tensors)
         png_bytes = tf.image.encode_png(x_hat)
-        
-        # fakepath = "tmp/decoded_telemetry.png"
-        # tf.io.write_file(fakepath, png_bytes)
-
-        print('========================================================================\n')
         return png_bytes.numpy()
     
     def bytes_to_tensor(self, img_bytes):
@@ -97,11 +67,6 @@ class AutoEncoder():
         
         # 4. Hitung PSNR (dB)
         psnr = tf.image.psnr(orig_tensor, recon_tensor, max_val=1.0)
-        
-        # return {
-        #     "mse": mse.numpy(),
-        #     "fidelity": fidelity.numpy(),
-        #     "psnr": tf.reduce_mean(psnr).numpy()
-        # }
+
         return fidelity.numpy()
 

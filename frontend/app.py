@@ -1,5 +1,4 @@
 import streamlit as st
-# import torch.nn as nn
 from PIL import Image
 import io
 import time
@@ -12,50 +11,13 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 from Backend.autoencoder import AutoEncoder
 
-# --- 1. DEFINISI MODEL AUTOENCODER ---
-# class SimpleAutoencoder(nn.Module):
-#     def __init__(self):
-#         super(SimpleAutoencoder, self).__init__()
-#         self.encoder = nn.Sequential(
-#             nn.Conv2d(3, 16, 3, stride=2, padding=1),
-#             nn.ReLU(),
-#             nn.Conv2d(16, 32, 3, stride=2, padding=1),
-#             nn.ReLU(),
-#             nn.Conv2d(32, 64, 3, stride=2, padding=1),
-#             nn.ReLU()
-#         )
-#         self.decoder = nn.Sequential(
-#             nn.ConvTranspose2d(64, 32, 3, stride=2, padding=1, output_padding=1),
-#             nn.ReLU(),
-#             nn.ConvTranspose2d(32, 16, 3, stride=2, padding=1, output_padding=1),
-#             nn.ReLU(),
-#             nn.ConvTranspose2d(16, 3, 3, stride=2, padding=1, output_padding=1),
-#             nn.Sigmoid()
-#         )
-
-#     def forward(self, x):
-#         latent = self.encoder(x)
-#         reconstructed = self.decoder(latent)
-#         return reconstructed, latent
-
-# @st.cache_resource
-# def load_model():
-#     model = SimpleAutoencoder()
-#     try:
-#         model.load_state_dict(torch.load('autoencoder_weights.pth', weights_only=True, map_location=torch.device('cpu')))
-#     except FileNotFoundError:
-#         pass # Akan jalan dengan untrained model jika file tidak ada
-#     model.eval()
-#     return model
-
 @st.cache_resource
 def load_autoencoder():
     return AutoEncoder("Backend/final_model")
 
 model = load_autoencoder()
 
-# --- 2. SETUP UI & CUSTOM CSS (NASA THEME) ---
-st.set_page_config(page_title="NASA | Orbital Compression", layout="wide", initial_sidebar_state="collapsed")
+st.set_page_config(page_title="End-to-end Satellite Image Compression Autoencoder", layout="wide", initial_sidebar_state="collapsed")
 
 # Inject Custom CSS
 st.markdown("""
@@ -148,8 +110,7 @@ try:
 except FileNotFoundError:
     st.warning("Video background tidak ditemukan. Pastikan file bg.mp4 ada di folder ini.")
 
-# --- 3. APLIKASI UTAMA ---
-st.title("IMAGE COMPRESSION FOR SPACE TELEMETRY")
+st.title("End-to-end Satellite Image Compression Autoencoder")
 st.markdown("---")
 
 # Layout 3 Kolom: [Upload] | [Proses & Metrik] | [Hasil]
@@ -159,7 +120,7 @@ col1, col2, col3 = st.columns([1, 1.2, 1])
 # KOLOM 1: UPLOAD & RAW DATA
 # ==========================================
 with col1:
-    st.subheader("1. TELEMETRY INGESTION")
+    st.subheader("1.⁠ IMAGE INGESTION")
     uploaded_file = st.file_uploader("UPLOAD RAW IMAGE", type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
@@ -178,76 +139,72 @@ with col1:
 # KOLOM 2: PROCESSING & METRICS
 # ==========================================
 with col2:
-    st.subheader("2. SYSTEM & METRICS")
+    st.subheader("2.⁠ LATENT IMAGE DETAILS")
     
     if uploaded_file is None:
         st.info("SYSTEM STANDBY...")
     else:
-        # transform = transforms.Compose([
-        #     transforms.Resize((128, 128)), 
-        #     transforms.ToTensor()
-        # ])
-        # input_tensor = transform(image).unsqueeze(0)
-
         status_text = st.empty()
         progress_bar = st.progress(0)
         
-        steps = [
-            (20, "ANALYZING DENSITY..."),
-            (50, "QUANTIZING VECTORS..."),
-            (80, "CALCULATING METRICS..."),
-            (100, "RECONSTRUCTION VERIFIED.")
-        ]
+        # steps = [
+        #     (20, "ANALYZING DENSITY..."),
+        #     (50, "QUANTIZING VECTORS..."),
+        #     (80, "CALCULATING METRICS..."),
+        #     (100, "RECONSTRUCTION VERIFIED.")
+        # ]
         
-        for percent, text in steps:
-            status_text.markdown(f"**STATUS:** `{text}`")
-            progress_bar.progress(percent)
-            time.sleep(0.4) 
+        # for percent, text in steps:
             
-        status_text.markdown("**STATUS:** `<span style='color:#00ff00'>SYSTEM NOMINAL.</span>`", unsafe_allow_html=True)
+        #     time.sleep(0.4) 
+            
+        # status_text.markdown("**STATUS:** `SYSTEM NOMINAL`", unsafe_allow_html=True)
 
-        # with torch.no_grad():
-        #     reconstructed_tensor, latent_tensor = model(input_tensor)
-
-        # reconstructed_img_tensor = reconstructed_tensor.squeeze(0)
-        # reconstructed_img = transforms.ToPILImage()(reconstructed_img_tensor)
-        # latent_array = latent_tensor.squeeze(0).numpy()
-
-        # buffer_latent = io.BytesIO()
-        # np.save(buffer_latent, latent_array)
-        # buffer_img = io.BytesIO()
-        # buffer_img = model.compress(image)
-        # buffer_img = model.compress("temp.png")
+        status_text.markdown(f"**STATUS:** `UPLOADING IMAGE`")
+        progress_bar.progress(5)
+        time.sleep(0.4)
+        status_text.markdown(f"**STATUS:** `COMPRESSING IMAGE`")
+        progress_bar.progress(6)
         buffer_img = model.compress_tensor(uploaded_bytes)
+        status_text.markdown(f"**STATUS:** `COMPRESSION COMPLETED`")
+        progress_bar.progress(50)
         buffer_img_io = io.BytesIO(buffer_img)
         
-        # reconstructed_img.save(buffer_img, format="PNG")
-
+        status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
+        progress_bar.progress(60)
         payload_size_bytes = len(buffer_img_io.getvalue())
         payload_size_kb = payload_size_bytes / 1024
         compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
-        # mse_loss = torch.mean((input_tensor - reconstructed_tensor) ** 2).item()
-        # fidelity_score = max(0.0, (1.0 - mse_loss) * 100) 
-        ##TODO workaround for fidelity score 
-        # fidelity_score = 85.0
-        
+        status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
+        progress_bar.progress(70)
         st.markdown("---")
         
         reconstructed_img = model.decompress(buffer_img)  # Simulate decompression untuk generate reconstructed_img
-
+        status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
+        progress_bar.progress(95)
         fidelity_score = model.calculate_metrics_from_bytes(uploaded_bytes, reconstructed_img)
-        
+        status_text.markdown(f"**STATUS:** `PROCESSING COMPLETED`")
+        progress_bar.progress(100)
         # Grid Metrik 2x2 biar muat di kolom tengah
-        m1, m2 = st.columns(2)
-        m1.metric(label="RAW SIZE", value=f"{raw_size_kb:.1f} KB")
-        m2.metric(label="PAYLOAD", value=f"{payload_size_kb:.1f} KB")
+        m1 = st.columns(1)
+        m1.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
+        m1.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
+        m1.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
         
-        m3, m4 = st.columns(2)
-        m3.metric(label="COMPRESSED", value=f"{compression_ratio:.1f}%")
-        m4.metric(label="FIDELITY", value=f"{fidelity_score:.2f}%")
 
         st.markdown("---")
         
+# ==========================================
+# KOLOM 3: RECONSTRUCTED PREVIEW
+# ==========================================
+with col3:
+    st.subheader("3.⁠ DECODED IMAGE")
+    
+    if uploaded_file is None:
+        st.info("AWAITING PAYLOAD...")
+    else:
+        st.caption("Click to expand")
+        st.image(reconstructed_img, caption="RECONSTRUCTED TELEMETRY", use_container_width=True)
         dl_col1, dl_col2 = st.columns(2)
         with dl_col1:
             st.download_button(
@@ -266,15 +223,5 @@ with col2:
                 mime="image/png",
                 use_container_width=True
             )
-
-# ==========================================
-# KOLOM 3: RECONSTRUCTED PREVIEW
-# ==========================================
-with col3:
-    st.subheader("3. DECODED OUTPUT")
-    
-    if uploaded_file is None:
-        st.info("AWAITING PAYLOAD...")
-    else:
-        st.caption("Click to expand")
-        st.image(reconstructed_img, caption="RECONSTRUCTED TELEMETRY", use_container_width=True)
+        col1 = st.columns(1)
+        col1.metric(label="FIDELITY", value=f"{fidelity_score:.2f}%")
