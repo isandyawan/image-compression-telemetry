@@ -124,14 +124,17 @@ with col1:
     uploaded_file = st.file_uploader("UPLOAD RAW IMAGE", type=['jpg', 'jpeg', 'png'])
 
     if uploaded_file is not None:
-        with open("/tmp/temp.png", "wb") as f:
-            f.write(uploaded_file.getbuffer())
-        uploaded_bytes = uploaded_file.read()
-        image = Image.open(uploaded_file).convert('RGB')
-        st.image(image, caption="RAW OPTICAL DATA", use_container_width=True)
+        # with open("/tmp/temp.png", "wb") as f:
+        #     f.write(uploaded_file.getbuffer())
+        
+        uploaded_bytes = uploaded_file.getvalue()
+        file_id = uploaded_file.name + str(len(uploaded_bytes))
+        image = Image.open(io.BytesIO(uploaded_bytes)).convert('RGB')
+        raw_size_bytes = len(uploaded_bytes)
 
-        raw_size_bytes = len(uploaded_file.getvalue())
-        raw_size_kb = raw_size_bytes / 1024
+        st.session_state.raw_size_kb = raw_size_bytes / 1024
+        
+        st.image(image, caption="RAW OPTICAL DATA", use_container_width=True)        
     else:
         st.info("AWAITING INGESTION...")
 
@@ -145,48 +148,50 @@ with col2:
         st.info("SYSTEM STANDBY...")
     else:
         status_text = st.empty()
-        progress_bar = st.progress(0)
-        
-        # steps = [
-        #     (20, "ANALYZING DENSITY..."),
-        #     (50, "QUANTIZING VECTORS..."),
-        #     (80, "CALCULATING METRICS..."),
-        #     (100, "RECONSTRUCTION VERIFIED.")
-        # ]
-        
-        # for percent, text in steps:
-            
-        #     time.sleep(0.4) 
-            
-        # status_text.markdown("**STATUS:** `SYSTEM NOMINAL`", unsafe_allow_html=True)
+        progress_bar = st.progress(100)
 
-        status_text.markdown(f"**STATUS:** `UPLOADING IMAGE`")
-        progress_bar.progress(5)
-        time.sleep(0.4)
-        status_text.markdown(f"**STATUS:** `COMPRESSING IMAGE`")
-        progress_bar.progress(6)
-        buffer_img = model.compress_tensor(uploaded_bytes)
-        status_text.markdown(f"**STATUS:** `COMPRESSION COMPLETED`")
-        progress_bar.progress(50)
-        buffer_img_io = io.BytesIO(buffer_img)
-        
-        status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
-        progress_bar.progress(60)
-        payload_size_bytes = len(buffer_img_io.getvalue())
-        payload_size_kb = payload_size_bytes / 1024
-        compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
-        st.markdown("---")
+        if st.session_state.get("file_id") != file_id:
+            st.session_state.file_id = file_id
+            progress_bar.progress(0)
+            
+            status_text.markdown(f"**STATUS:** `UPLOADING IMAGE`")
+            progress_bar.progress(5)
+            time.sleep(0.4)
+
+            status_text.markdown(f"**STATUS:** `COMPRESSING IMAGE`")
+            progress_bar.progress(6)
+            st.session_state.buffer_img = model.compress_tensor(uploaded_bytes)
+
+            status_text.markdown(f"**STATUS:** `COMPRESSION COMPLETED`")
+            progress_bar.progress(50)
+            st.session_state.buffer_img_io = io.BytesIO(st.session_state.buffer_img)
+            
+            status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
+            progress_bar.progress(60)
+            payload_size_bytes = len(st.session_state.buffer_img_io.getvalue())
+            st.session_state.payload_size_kb = payload_size_bytes / 1024
+            st.session_state.compression_ratio = (1 - (payload_size_bytes / raw_size_bytes)) * 100
+            st.markdown("---")
+
+            status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
+            progress_bar.progress(70)
+            st.session_state.reconstructed_img = model.decompress(st.session_state.buffer_img)  # Simulate decompression untuk generate reconstructed_img
+                 
+        buffer_img = st.session_state.buffer_img
+        buffer_img_io = st.session_state.buffer_img_io
+        reconstructed_img = st.session_state.reconstructed_img
+        raw_size_kb = st.session_state.raw_size_kb
+        payload_size_kb = st.session_state.payload_size_kb
+        compression_ratio = st.session_state.compression_ratio
 
         st.metric(label="RAW IMAGE SIZE", value=f"{raw_size_kb:.1f} KB")
         st.metric(label="LATENT PAYLOAD", value=f"{payload_size_kb:.1f} KB")
         st.metric(label="COMPRESSION RATIO", value=f"{compression_ratio:.1f}%")
-        
-        
-        status_text.markdown(f"**STATUS:** `IMAGE DECOMPRESSION IN PROGRESS`")
-        progress_bar.progress(70)
-        
-        
-        reconstructed_img = model.decompress(buffer_img)  # Simulate decompression untuk generate reconstructed_img
+            
+        st.markdown("---")        
+        status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
+        progress_bar.progress(95)                    
+
         dl_col1, dl_col2 = st.columns(2)
         with dl_col1:
             st.download_button(
@@ -205,9 +210,7 @@ with col2:
                 mime="image/png",
                 use_container_width=True
             )
-        st.markdown("---")
-        status_text.markdown(f"**STATUS:** `CALCULATING METRICS`")
-        progress_bar.progress(95)
+
         fidelity_score = model.calculate_metrics_from_bytes(uploaded_bytes, reconstructed_img)
         status_text.markdown(f"**STATUS:** `PROCESSING COMPLETED`")
         progress_bar.progress(100)
